@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case File: Ötzi the Iceman — History Mystery Investigation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Special+Elite&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ice:#102433;          /* alpine night - app background */
+    --ice-deep:#0b1a26;
+    --manila:#d9c8a4;       /* case folder */
+    --parchment:#ece3cf;    /* evidence paper (field notebook) */
+    --parchment-edge:#ddd2b6;
+    --ink:#1f2a30;          /* main text */
+    --ink-soft:#46555d;
+    --stamp:#9e2b25;        /* CONFIDENTIAL / locked */
+    --copper:#b06a33;       /* the copper axe - unlocked / solved accent */
+    --copper-bright:#cd8845;
+    --frost:#5d8aa3;        /* cold blue ink */
+    --frost-soft:#9bc0d2;
+    --paper-line:rgba(31,42,48,.12);
+    --display:"Zilla Slab",Georgia,"Times New Roman",serif;
+    --type:"Special Elite","Courier New",monospace;
+    --body:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--body);
+    color:var(--ink);
+    line-height:1.55;
+    background:
+      radial-gradient(130% 90% at 50% -10%, #1a3a4c 0%, var(--ice) 48%, var(--ice-deep) 100%) fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:rgba(11,26,38,.93);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(155,192,210,.18);
+    color:#eaf2f6;
+    padding:10px 18px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .topbar .badge{
+    font-family:var(--type);font-size:12px;letter-spacing:1px;
+    color:var(--frost-soft);text-transform:uppercase;white-space:nowrap;
+  }
+  .topbar h1{
+    font-family:var(--display);font-weight:700;font-size:16px;margin:0;
+    color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .progress-wrap{flex:1;display:flex;align-items:center;gap:10px;min-width:80px}
+  .progress-track{flex:1;height:7px;border-radius:6px;background:rgba(255,255,255,.14);overflow:hidden}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--copper),var(--copper-bright));transition:width .5s ease}
+  .progress-label{font-family:var(--type);font-size:11px;color:var(--frost-soft);white-space:nowrap}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:780px;margin:0 auto;padding:26px 16px 90px}
+  .screen{display:none;animation:rise .45s ease both}
+  .screen.active{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ---------- case folder card ---------- */
+  .folder{
+    background:var(--parchment);
+    border-radius:10px;
+    box-shadow:0 18px 40px rgba(0,0,0,.42), 0 2px 0 var(--parchment-edge);
+    padding:26px 26px 30px;
+    position:relative;
+    background-image:
+      repeating-linear-gradient(180deg, transparent 0 30px, var(--paper-line) 30px 31px);
+  }
+  .folder::before{
+    content:"";position:absolute;left:26px;top:0;bottom:0;width:1px;
+    background:rgba(158,43,37,.25);
+  }
+
+  .stamp{
+    display:inline-block;font-family:var(--type);font-size:13px;letter-spacing:2px;
+    color:var(--stamp);border:2px solid var(--stamp);border-radius:4px;
+    padding:5px 12px;transform:rotate(-3deg);text-transform:uppercase;
+    opacity:.85;margin-bottom:18px;
+  }
+  .case-title{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.1;margin:6px 0 4px;color:var(--ink)}
+  .case-sub{font-family:var(--type);font-size:15px;color:var(--ink-soft);margin-bottom:6px}
+  .case-grade{font-size:13px;color:var(--ink-soft);letter-spacing:.3px;margin-bottom:20px}
+
+  .video-frame{
+    border-radius:8px;overflow:hidden;border:3px solid #1a2c36;
+    box-shadow:0 8px 22px rgba(0,0,0,.3);margin:8px 0 22px;
+    aspect-ratio:16/9;background:#000;
+  }
+  .video-frame iframe{width:100%;height:100%;border:0;display:block}
+
+  h2.beat{
+    font-family:var(--display);font-size:22px;color:var(--ink);
+    margin:4px 0 2px;display:flex;align-items:center;gap:9px;
+  }
+  h2.beat .num{
+    font-family:var(--type);font-size:13px;background:var(--copper);color:#fff;
+    border-radius:50%;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;flex:none;
+  }
+  .lead{color:var(--ink-soft);font-size:15px;margin:8px 0 18px}
+
+  /* ---------- word box / helper ---------- */
+  .helper-toggle{
+    position:fixed;right:14px;bottom:14px;z-index:40;
+    background:var(--copper);color:#fff;border:0;border-radius:30px;
+    font-family:var(--type);font-size:13px;letter-spacing:.5px;
+    padding:11px 16px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.35);
+  }
+  .helper-toggle:hover{background:var(--copper-bright)}
+  .helper-panel{
+    position:fixed;right:14px;bottom:64px;z-index:40;width:min(330px,92vw);
+    background:var(--parchment);border-radius:12px;padding:16px 16px 18px;
+    box-shadow:0 18px 44px rgba(0,0,0,.5);display:none;max-height:72vh;overflow:auto;
+  }
+  .helper-panel.open{display:block}
+  .helper-panel h4{font-family:var(--display);margin:0 0 8px;font-size:16px;color:var(--copper)}
+  .helper-panel h4:not(:first-child){margin-top:16px}
+  .wordrow{display:flex;gap:8px;font-size:13.5px;padding:4px 0;border-bottom:1px dashed var(--paper-line)}
+  .wordrow b{color:var(--ink);min-width:96px;flex:none}
+  .wordrow span{color:var(--ink-soft)}
+  .starter{font-size:13.5px;color:var(--ink-soft);padding:3px 0;font-style:italic}
+
+  /* ---------- evidence card ---------- */
+  .evidence{
+    background:var(--parchment);border-radius:10px;padding:0;overflow:hidden;
+    box-shadow:0 14px 34px rgba(0,0,0,.4);margin-bottom:8px;
+  }
+  .ev-head{
+    background:#1a2c36;color:#eaf2f6;padding:13px 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .ev-head .tag{font-family:var(--type);font-size:13px;letter-spacing:1px}
+  .ev-head .src{font-size:11px;color:var(--frost-soft);border:1px solid rgba(155,192,210,.5);border-radius:20px;padding:3px 10px;white-space:nowrap}
+  .ev-body{padding:20px 22px 22px}
+  .ev-text{font-size:15.5px;color:var(--ink);margin:0 0 16px}
+  .qblock{border-left:3px solid var(--copper);padding:8px 0 8px 14px;margin:14px 0}
+  .qblock .lbl{font-family:var(--type);font-size:12px;letter-spacing:1px;color:var(--copper);text-transform:uppercase;display:block;margin-bottom:6px}
+  .qblock p{margin:5px 0;font-size:14.5px;color:var(--ink-soft)}
+  .qblock.source{border-left-color:var(--frost)}
+  .qblock.source .lbl{color:var(--frost)}
+
+  .tracker-label{font-family:var(--type);font-size:12px;letter-spacing:1px;color:var(--ink-soft);text-transform:uppercase;margin:18px 0 6px;display:block}
+  textarea{
+    width:100%;border:1px solid var(--parchment-edge);border-radius:7px;
+    background:#fffdf6;font-family:var(--body);font-size:14.5px;color:var(--ink);
+    padding:10px 12px;resize:vertical;min-height:62px;line-height:1.5;
+  }
+  textarea:focus{outline:2px solid var(--copper);border-color:var(--copper)}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
+
+  /* ---------- locked overlay ---------- */
+  .locked{position:relative}
+  .locked .evidence{filter:blur(4px);opacity:.5;pointer-events:none;user-select:none}
+  .lock-veil{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:8px;z-index:5;
+  }
+  .lock-veil .ico{font-size:30px}
+  .lock-veil .msg{font-family:var(--type);font-size:14px;color:#eaf2f6;letter-spacing:.5px;max-width:80%}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    font-family:var(--type);font-size:15px;letter-spacing:.5px;
+    background:var(--copper);color:#fff;border:0;border-radius:8px;
+    padding:13px 22px;cursor:pointer;box-shadow:0 6px 16px rgba(176,106,51,.4);
+    transition:transform .12s ease, background .2s;
+  }
+  .btn:hover{background:var(--copper-bright);transform:translateY(-1px)}
+  .btn:disabled{background:#b9ad92;cursor:not-allowed;box-shadow:none;transform:none}
+  .btn.ghost{background:transparent;color:var(--frost-soft);box-shadow:none;border:1px solid rgba(155,192,210,.4)}
+  .btn.ghost:hover{background:rgba(155,192,210,.12)}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center}
+  .hint{font-size:13px;color:var(--frost-soft);font-family:var(--type)}
+
+  /* ---------- reveal ---------- */
+  .case-closed-stamp{
+    display:inline-block;font-family:var(--type);font-size:18px;letter-spacing:3px;
+    color:var(--copper);border:3px double var(--copper);border-radius:6px;
+    padding:8px 18px;transform:rotate(-2deg);text-transform:uppercase;margin-bottom:18px;
+  }
+  .reveal-block{margin:18px 0}
+  .reveal-block h3{font-family:var(--display);font-size:19px;color:var(--copper);margin:0 0 6px;border-bottom:2px solid var(--paper-line);padding-bottom:5px}
+  .reveal-block p{font-size:15px;color:var(--ink);margin:8px 0}
+  .redherring{background:#f6ece0;border:1px dashed var(--copper);border-radius:9px;padding:14px 16px;margin:16px 0}
+  .redherring h3{color:var(--stamp);border:0;margin-bottom:4px}
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:#1a2c36;color:#eaf2f6;font-family:var(--type);font-size:14px;
+    padding:12px 20px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+    opacity:0;transition:all .3s ease;z-index:60;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:560px){
+    .case-title{font-size:27px}
+    .folder{padding:20px 18px 24px}
+    .topbar h1{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="badge">Case&nbsp;File</span>
+  <h1>Ötzi the Iceman</h1>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+    <span class="progress-label" id="progLabel">Briefing</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ SCREEN 0: BRIEFING ============ -->
+  <section class="screen active" id="screen-intro">
+    <div class="folder">
+      <span class="stamp">Confidential</span>
+      <div class="case-title">The Iceman</div>
+      <div class="case-sub">A frozen body in the mountains — and a death 5,300 years ago</div>
+      <div class="case-grade">Grade 7 · English level B1 · History Mystery Investigation</div>
+
+      <div class="video-frame">
+        <iframe src="https://www.youtube.com/embed/i08SBZ2Cd7Q" title="Case briefing" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+
+      <h2 class="beat">The case</h2>
+      <p class="ev-text" style="margin-bottom:6px">In September 1991, two hikers were walking high in the snowy Alps, on the border between Austria and Italy. They saw something brown sticking out of the ice. It was a human body.</p>
+      <p class="ev-text" style="margin-bottom:6px">At first they thought it was a climber who had died a few years before. They were very wrong. When scientists studied the body, they got a shock: this man had died about <b>5,300 years ago</b>. The ice had kept his body, his clothes, and even his tools almost perfect.</p>
+      <p class="ev-text">People named him <b>Ötzi</b>. But one big question remains: how did he die, so high in the mountains, so long ago? <b>That is your case. You are the investigators.</b></p>
+
+      <span class="tracker-label">Before you see any evidence — your first theory</span>
+      <div class="field">
+        <label for="firstTheory">How do you think Ötzi died, so high up in the mountains? Write your first idea — a guess is fine.</label>
+        <textarea id="firstTheory" placeholder="We think Ötzi died because…"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="beginBtn" disabled>Open the evidence →</button>
+        <span class="hint" id="beginHint">Write your first theory to begin.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 1: EVIDENCE ============ -->
+  <section class="screen" id="screen-evidence">
+    <div class="folder" style="background-image:none;background:transparent;box-shadow:none;padding:0">
+      <h2 class="beat" style="color:#eaf2f6"><span class="num">?</span> The evidence</h2>
+      <p class="lead" style="color:var(--frost-soft)">Each clue is locked until your team writes up the one before it. Read it together, talk about the two questions, then record what it tells you. <b>Your thinking unlocks the next clue.</b></p>
+      <div id="evidenceList"></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: VERDICT ============ -->
+  <section class="screen" id="screen-verdict">
+    <div class="folder">
+      <span class="stamp">Detective's Report</span>
+      <div class="case-title" style="font-size:26px">Your verdict</div>
+      <p class="lead">You have seen all seven clues. A good detective uses evidence — and is honest about clues that do not fit. Agree on your verdict as a team.</p>
+
+      <div class="field">
+        <label for="vTheory">My theory: what happened to Ötzi?</label>
+        <textarea id="vTheory" placeholder="We think that…"></textarea>
+      </div>
+      <div class="field">
+        <label for="vStrong">My two strongest pieces of evidence:</label>
+        <textarea id="vStrong" placeholder="1)…  2)…"></textarea>
+      </div>
+      <div class="field">
+        <label for="vNotfit">One clue that does NOT fit my theory (or that tried to mislead us):</label>
+        <textarea id="vNotfit" placeholder="The clue that did not fit was…"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="fileBtn" disabled>File our verdict & open the truth →</button>
+        <span class="hint" id="fileHint">Fill in all three boxes to file your verdict.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3: REVEAL ============ -->
+  <section class="screen" id="screen-reveal">
+    <div class="folder">
+      <span class="case-closed-stamp">Case Closed</span>
+      <div class="case-title" style="font-size:28px">Ötzi was murdered.</div>
+      <p class="ev-text">About 5,300 years ago, someone shot Ötzi in the back with an arrow while he was high in the mountains. The arrow cut a major blood vessel and he died quickly. He is often called <b>“the world's oldest murder mystery.”</b></p>
+
+      <div class="reveal-block">
+        <h3>What really happened</h3>
+        <p>Ötzi was ambushed. An arrow shot from behind hit him in the left shoulder and cut an artery, and he bled to death within minutes. The cut on his hand suggests he had been in a fight a day or two earlier. The killer seems to have pulled out the wooden arrow shaft — but left the stone tip inside, where it stayed hidden for thousands of years. We still do not know who killed him, or exactly why. But we know <b>how</b> he died.</p>
+      </div>
+
+      <div class="reveal-block">
+        <h3>How the case was solved</h3>
+        <p>For ten years the murder stayed hidden. Then, in 2001, a CT scan revealed the stone arrowhead buried in his shoulder. Modern science also read his last meal, studied his clothes and tools, and even tested his DNA — finding he had brown eyes and relatives still living in the Alps today.</p>
+      </div>
+
+      <div class="reveal-block">
+        <h3>What people used to think</h3>
+        <p>At first, everyone believed Ötzi had simply been caught in bad weather and frozen to death. It was a sensible guess that matched what they could see — but it was wrong. The arrow that killed him was hidden deep inside his body, where no one could see it until new technology arrived.</p>
+      </div>
+
+      <div class="redherring">
+        <h3>⚠ The red herring</h3>
+        <p style="margin:6px 0">The blood from <b>other people</b> on Ötzi's weapons is the red herring. It is real and fascinating — it suggests he had been in a fight, or perhaps carried a wounded friend — but it does <b>not</b> tell us who killed <b>him</b>. The clue that solves his death is the arrow in his back. Don't let an exciting clue pull you away from the question you are actually trying to answer.</p>
+      </div>
+
+      <div class="reveal-block">
+        <h3>The big thinking point</h3>
+        <p>For ten years, careful scientists believed the wrong thing — not because they were lazy, but because they could not see the hidden clue. When a new machine arrived, the answer suddenly appeared. So how sure can we ever be that we are “right”? Should we always be ready to change our minds when better evidence comes along?</p>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="downloadBtn">⬇ Download our report (.txt)</button>
+        <button class="btn ghost" id="restartBtn">Start a new investigation</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<button class="helper-toggle" id="helperToggle">📖 Word help</button>
+<div class="helper-panel" id="helperPanel">
+  <h4>Word Box</h4>
+  <div id="wordbox"></div>
+  <h4>Talk like a detective</h4>
+  <div id="starters"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const EVIDENCE = [
+  {
+    tag:"Evidence 1", src:"Source: the body & clothing, preserved in ice",
+    text:"Ötzi was found high in the mountains, near a pass between two valleys. He was wearing warm clothes: a leather coat, a grass cape, and shoes stuffed with grass to keep his feet warm.",
+    talk:["What do his warm clothes and his place high in the mountains tell you about what he was doing?","Does this look like someone who was lost and unready, or someone on a journey? Why?"],
+    source:"His clothes survived in the ice for 5,300 years. Could being frozen for so long have changed or damaged some of the evidence?"
+  },
+  {
+    tag:"Evidence 2", src:"Source: the tools found with him",
+    text:"He was carrying many tools: a copper axe, a flint knife, and a bow with a bag of arrows. A copper axe was a rare and valuable thing to own 5,300 years ago.",
+    talk:["If a robber had attacked him, what would you expect to be missing? Were his valuable tools still there?","What might the valuable copper axe tell you about who Ötzi was?"],
+    source:"We know the axe was valuable because experts compared it with other finds from that time. How do experts decide what counted as “valuable” so long ago?"
+  },
+  {
+    tag:"Evidence 3", src:"Source: the scientists' early theory",
+    text:"For many years, scientists believed Ötzi had simply grown tired and cold in a storm and frozen to death. There seemed to be no other explanation.",
+    talk:["The “froze in a storm” idea seemed to fit. Why can it be risky to accept the first explanation that seems to fit?","What kind of new clue might change this theory?"],
+    source:"For years, this was the best theory the scientists had. Does the best theory at one time always turn out to be correct? Why might it change later?"
+  },
+  {
+    tag:"Evidence 4", src:"Source: a 2001 CT scan (new technology)",
+    text:"In 2001, scientists used a new machine to take a special photo — a CT scan — that shows the inside of the body. Deep inside Ötzi's left shoulder, they found a stone arrowhead.",
+    talk:["How does this hidden arrowhead change the “froze in a storm” theory?","What does it tell you that the arrowhead was deep inside his shoulder?"],
+    source:"The arrowhead was only found because of a new machine. What does this tell you about evidence we might miss without the right tools?"
+  },
+  {
+    tag:"Evidence 5", src:"Source: examination of the wounds",
+    text:"The arrow had entered from behind and cut a large blood vessel. Only the stone tip was left inside him — the wooden part of the arrow was gone. Ötzi also had a deep cut on his right hand, the kind you get when you try to defend yourself.",
+    talk:["The arrow came from behind. What does that suggest about how he was attacked?","He had a cut on his hand from defending himself. What story do these two clues tell together?"],
+    source:"Scientists call the hand cut a “defensive wound.” Is that a fact we can simply see, or an expert's opinion about how it happened? How do they decide?"
+  },
+  {
+    tag:"Evidence 6", src:"Source: traces of blood on his gear",
+    text:"Scientists found tiny traces of blood from other people on Ötzi's knife, his arrows, and his coat — blood from more than one person. Some thought this meant Ötzi was a dangerous fighter who had hurt others.",
+    talk:["If Ötzi had other people's blood on his weapons, what might some people guess about him?","Does blood on his tools tell us who killed HIM? Why or why not?"],
+    source:"The blood shows Ötzi had been near other people, perhaps in a fight — but it does not say who attacked whom. Why is it easy to jump to the wrong conclusion from a clue like this?"
+  },
+  {
+    tag:"Evidence 7", src:"Source: the contents of his stomach",
+    text:"Scientists studied Ötzi's stomach. His last meal — meat and grain — had been eaten only a short time before he died. He was not slowly starving. He died suddenly.",
+    talk:["If his last meal was eaten just before he died, can he have died slowly from hunger or tiredness? Why not?","Putting all the clues together, what do you now think happened to Ötzi?"],
+    source:"His last meal was still in his stomach after 5,300 years. Why is something sealed inside a frozen body a strong kind of evidence?"
+  }
+];
+
+const WORDS = [
+  ["ancient","very, very old"],
+  ["mummy","a dead body kept for a very long time without rotting"],
+  ["preserve","to keep something in good condition"],
+  ["the Alps","a range of high mountains in Europe"],
+  ["evidence","facts that help you find the truth"],
+  ["clue","one piece of information that helps solve a mystery"],
+  ["wound","an injury to the body"],
+  ["weapon","a tool used to hurt or kill (like a knife or an arrow)"],
+  ["scan / X-ray","a special photo that shows the inside of a body"],
+  ["theory","an idea that tries to explain something"]
+];
+
+const STARTERS = [
+  "I think … because …",
+  "This clue is important because …",
+  "The evidence shows that …",
+  "At first I thought …, but now I think …",
+  "This is suspicious because …",
+  "The strongest clue is number … because …"
+];
+
+/* ---------------- STATE ---------------- */
+const SKEY = "otzi_investigation_v1";
+let state = {
+  firstTheory:"",
+  notes:Array(EVIDENCE.length).fill().map(()=>({tells:"",think:""})),
+  unlocked:1,            // how many evidence cards are open
+  verdict:{theory:"",strong:"",notfit:""},
+  filed:false
+};
+try{ const saved=localStorage.getItem(SKEY); if(saved) state=Object.assign(state,JSON.parse(saved)); }catch(e){}
+function save(){ try{ localStorage.setItem(SKEY,JSON.stringify(state)); }catch(e){} }
+
+/* ---------------- HELPERS ---------------- */
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$("#"+id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"});}
+
+function updateProgress(){
+  let pct=0,label="Briefing";
+  if($("#screen-evidence").classList.contains("active")){
+    pct=10+ (state.unlocked/EVIDENCE.length)*70; label="Clue "+Math.min(state.unlocked,EVIDENCE.length)+" of "+EVIDENCE.length;
+  } else if($("#screen-verdict").classList.contains("active")){pct=85;label="Verdict";}
+  else if($("#screen-reveal").classList.contains("active")){pct=100;label="Case closed";}
+  else {pct=6;label="Briefing";}
+  $("#progFill").style.width=pct+"%";$("#progLabel").textContent=label;
+}
+
+/* ---------------- BUILD WORD HELP ---------------- */
+$("#wordbox").innerHTML=WORDS.map(w=>`<div class="wordrow"><b>${w[0]}</b><span>${w[1]}</span></div>`).join("");
+$("#starters").innerHTML=STARTERS.map(s=>`<div class="starter">“${s}”</div>`).join("");
+$("#helperToggle").onclick=()=>$("#helperPanel").classList.toggle("open");
+
+/* ---------------- INTRO ---------------- */
+const firstTheoryEl=$("#firstTheory");
+firstTheoryEl.value=state.firstTheory;
+function checkBegin(){
+  const ok=firstTheoryEl.value.trim().length>3;
+  $("#beginBtn").disabled=!ok;
+  $("#beginHint").style.display=ok?"none":"inline";
+}
+firstTheoryEl.addEventListener("input",()=>{state.firstTheory=firstTheoryEl.value;save();checkBegin();});
+checkBegin();
+$("#beginBtn").onclick=()=>{show("screen-evidence");updateProgress();};
+
+/* ---------------- EVIDENCE ---------------- */
+function buildEvidence(){
+  const list=$("#evidenceList");list.innerHTML="";
+  EVIDENCE.forEach((ev,i)=>{
+    const open = i < state.unlocked;
+    const wrap=document.createElement("div");
+    wrap.style.marginBottom="22px";
+    if(!open){
+      wrap.className="locked";
+      wrap.innerHTML=`
+        <div class="evidence">
+          <div class="ev-head"><span class="tag">${ev.tag}</span><span class="src">sealed</span></div>
+          <div class="ev-body"><p class="ev-text">${ev.text}</p></div>
+        </div>
+        <div class="lock-veil">
+          <div class="ico">🔒</div>
+          <div class="msg">Locked. Write up Clue ${i} first to unlock this evidence.</div>
+        </div>`;
+      list.appendChild(wrap);
+      return;
+    }
+    const n=state.notes[i];
+    wrap.innerHTML=`
+      <div class="evidence">
+        <div class="ev-head"><span class="tag">${ev.tag}</span><span class="src">${ev.src}</span></div>
+        <div class="ev-body">
+          <p class="ev-text">${ev.text}</p>
+          <div class="qblock"><span class="lbl">Talk about it</span>
+            ${ev.talk.map(q=>`<p>• ${q}</p>`).join("")}
+          </div>
+          <div class="qblock source"><span class="lbl">Check the source</span><p>• ${ev.source}</p></div>
+          <span class="tracker-label">Theory Tracker — record this together</span>
+          <div class="field"><label>What this clue tells me:</label>
+            <textarea data-i="${i}" data-k="tells" placeholder="This clue tells us…">${n.tells}</textarea></div>
+          <div class="field"><label>Now I think… because…</label>
+            <textarea data-i="${i}" data-k="think" placeholder="Now we think… because…">${n.think}</textarea></div>
+          <div class="btn-row" id="evbtn-${i}"></div>
+        </div>
+      </div>`;
+    list.appendChild(wrap);
+
+    const btnRow=wrap.querySelector("#evbtn-"+i);
+    if(i < EVIDENCE.length-1){
+      const isNext = (i === state.unlocked-1);
+      btnRow.innerHTML = isNext
+        ? `<button class="btn" data-unlock="${i}" disabled>Unlock Clue ${i+2} →</button><span class="hint">Fill in both boxes to unlock the next clue.</span>`
+        : `<span class="hint">✓ Written up — Clue ${i+2} is open below.</span>`;
+    } else {
+      btnRow.innerHTML = `<button class="btn" id="toVerdict" disabled>All clues seen — go to verdict →</button><span class="hint">Fill in both boxes to finish.</span>`;
+    }
+  });
+  bindEvidence();
+  refreshGates();
+}
+
+function bindEvidence(){
+  document.querySelectorAll('textarea[data-i]').forEach(t=>{
+    t.addEventListener("input",()=>{
+      const i=+t.dataset.i,k=t.dataset.k;
+      state.notes[i][k]=t.value;save();refreshGates();
+    });
+  });
+  document.querySelectorAll('button[data-unlock]').forEach(b=>{
+    b.onclick=()=>{
+      const i=+b.dataset.unlock;
+      state.unlocked=Math.max(state.unlocked,i+2);save();
+      buildEvidence();updateProgress();
+      toast("Clue "+(i+2)+" unlocked.");
+      setTimeout(()=>{const cards=document.querySelectorAll("#evidenceList > div");if(cards[i+1])cards[i+1].scrollIntoView({behavior:"smooth",block:"center"});},120);
+    };
+  });
+  const tv=$("#toVerdict");if(tv)tv.onclick=()=>{show("screen-verdict");updateProgress();checkVerdict();};
+}
+
+function noteComplete(i){return state.notes[i].tells.trim().length>2 && state.notes[i].think.trim().length>2;}
+
+function refreshGates(){
+  const lastOpen=state.unlocked-1;
+  // unlock button for the current furthest card
+  const ub=document.querySelector('button[data-unlock="'+lastOpen+'"]');
+  if(ub) ub.disabled=!noteComplete(lastOpen);
+  // verdict button if last card is the open one
+  const tv=$("#toVerdict");
+  if(tv && lastOpen===EVIDENCE.length-1) tv.disabled=!noteComplete(lastOpen);
+}
+
+/* ---------------- VERDICT ---------------- */
+const vT=$("#vTheory"),vS=$("#vStrong"),vN=$("#vNotfit");
+vT.value=state.verdict.theory;vS.value=state.verdict.strong;vN.value=state.verdict.notfit;
+function checkVerdict(){
+  const ok=vT.value.trim()&&vS.value.trim()&&vN.value.trim();
+  $("#fileBtn").disabled=!ok;$("#fileHint").style.display=ok?"none":"inline";
+}
+[ [vT,"theory"],[vS,"strong"],[vN,"notfit"] ].forEach(([el,k])=>{
+  el.addEventListener("input",()=>{state.verdict[k]=el.value;save();checkVerdict();});
+});
+checkVerdict();
+$("#fileBtn").onclick=()=>{state.filed=true;save();show("screen-reveal");updateProgress();};
+
+/* ---------------- DOWNLOAD REPORT ---------------- */
+$("#downloadBtn").onclick=()=>{
+  let r="";
+  r+="==============================================\n";
+  r+="  HISTORY MYSTERY INVESTIGATION — DETECTIVE'S REPORT\n";
+  r+="  CASE: Ötzi the Iceman\n";
+  r+="==============================================\n\n";
+  r+="OUR FIRST THEORY (before any evidence):\n"+(state.firstTheory||"—")+"\n\n";
+  r+="----------------------------------------------\n THEORY TRACKER\n----------------------------------------------\n";
+  EVIDENCE.forEach((ev,i)=>{
+    r+="\n"+ev.tag.toUpperCase()+"\n";
+    r+="  What this clue tells us: "+(state.notes[i].tells||"—")+"\n";
+    r+="  Now we think… because…: "+(state.notes[i].think||"—")+"\n";
+  });
+  r+="\n----------------------------------------------\n OUR VERDICT\n----------------------------------------------\n";
+  r+="Our theory: "+(state.verdict.theory||"—")+"\n\n";
+  r+="Our two strongest pieces of evidence: "+(state.verdict.strong||"—")+"\n\n";
+  r+="One clue that did NOT fit: "+(state.verdict.notfit||"—")+"\n\n";
+  r+="==============================================\n";
+  r+="THE TRUTH (revealed by the case): Ötzi was murdered —\n";
+  r+="shot in the back with an arrow ~5,300 years ago. Solved\n";
+  r+="in 2001 by a CT scan that found the hidden stone arrowhead.\n";
+  r+="Red herring: blood from other people on his weapons.\n";
+  r+="==============================================\n";
+  const blob=new Blob([r],{type:"text/plain"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="Otzi-Detective-Report.txt";
+  a.click();
+  toast("Report downloaded — now submit it to Classroom.");
+};
+
+/* ---------------- RESTART ---------------- */
+$("#restartBtn").onclick=()=>{
+  if(confirm("Start a brand-new investigation? This clears your team's answers on this device.")){
+    localStorage.removeItem(SKEY);location.reload();
+  }
+};
+
+/* ---------------- INIT ---------------- */
+buildEvidence();
+updateProgress();
+// If a team had progressed before a refresh, drop them back where they were:
+if(state.filed){show("screen-reveal");}
+else if(state.unlocked>1 || state.firstTheory){ /* stay on intro unless they begin */ }
+updateProgress();
+</script>
+</body>
+</html>
